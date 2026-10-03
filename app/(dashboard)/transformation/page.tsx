@@ -1,7 +1,6 @@
 import React from 'react'
 import { prisma } from '@/lib/db'
-import { KpiCard } from '@/components/shared/KpiCard'
-import { CheckCircle2, CircleDashed, Clock, MapPin, IndianRupee, Activity, TrendingUp } from 'lucide-react'
+import { CheckCircle2, CircleDashed, Clock, IndianRupee, Activity, TrendingUp } from 'lucide-react'
 
 export default async function TransformationPage() {
   const sourceOcc = await prisma.occupation.findFirst({ where: { name: 'Industrial Electrician' } })

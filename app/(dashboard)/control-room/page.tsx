@@ -1,16 +1,10 @@
 import fs from 'fs'
 import path from 'path'
-import dynamic from 'next/dynamic'
 import { prisma } from '@/lib/db'
 import { KpiCard } from '@/components/shared/KpiCard'
 import { DataTable } from '@/components/shared/DataTable'
-import { AlertTriangle, Clock } from 'lucide-react'
-
-// Dynamically import the map to avoid SSR issues with Leaflet
-const IndiaMap = dynamic(() => import('@/components/maps/IndiaMap'), {
-  ssr: false,
-  loading: () => <div className="h-[400px] w-full bg-muted animate-pulse rounded-lg border border-border" />
-})
+import { AlertTriangle } from 'lucide-react'
+import IndiaMap from '@/components/maps/IndiaMap'
 
 export default async function ControlRoomPage() {
   // Fetch National Aggregate Data (OVERVIEW key)

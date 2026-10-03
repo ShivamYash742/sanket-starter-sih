@@ -3,9 +3,7 @@ import React from 'react'
 import { prisma } from '@/lib/db'
 import { KpiCard } from '@/components/shared/KpiCard'
 import { DataTable } from '@/components/shared/DataTable'
-import dynamic from 'next/dynamic'
-
-const IndiaMap = dynamic(() => import('@/components/maps/IndiaMap'), { ssr: false })
+import IndiaMap from '@/components/maps/IndiaMap'
 
 export default async function CapacityPage() {
   const centres = await prisma.trainingCentre.findMany({

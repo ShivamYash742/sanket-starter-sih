@@ -1,4 +1,3 @@
-import { ENGINE_CONFIG } from './config'
 
 export interface ScenarioParams {
   demandPct: number // e.g. -0.1 for -10%

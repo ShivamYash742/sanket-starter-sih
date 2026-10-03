@@ -9,7 +9,7 @@ const approveSchema = z.object({
   reason: z.string().optional()
 })
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // Await params per Next.js 16 conventions
   const { id } = await params
   

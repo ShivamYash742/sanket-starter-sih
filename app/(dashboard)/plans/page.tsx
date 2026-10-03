@@ -67,7 +67,6 @@ export default function PlansPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <KpiCard title="Demand" value="2,500" />
             <KpiCard title="Directly Deployable" value="600" />
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <KpiCard title="Activated Transformable" value={((plan.assignments as any[]) || []).reduce((a: number, c: { workers: number }) => a + c.workers, 0).toLocaleString('en-IN')} />
             <KpiCard title="Residual Gap" value={Object.values((plan.unactivated as Record<string, number>) || {}).reduce((a: number, c: number) => a + c, 0).toLocaleString('en-IN')} />
           </div>

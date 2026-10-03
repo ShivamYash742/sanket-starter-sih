@@ -70,11 +70,6 @@ async function main() {
     }
   })
 
-  // 2. Comparable Projects
-  const sectors = ['SEMICONDUCTOR', 'EV', 'SOLAR']
-  for (let i = 0; i < 12; i++) {
-    // just dummy projects
-  }
 
   // To precisely hit the golden numbers for SEMICONDUCTOR: 
   const semiRatios = [0.20, 0.21, 0.22, 0.23, 0.24, 0.24, 0.25, 0.26, 0.27, 0.27, 0.28]

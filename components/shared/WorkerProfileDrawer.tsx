@@ -24,9 +24,7 @@ export function WorkerProfileDrawer({ workerId, occupation, location, experience
   const [error, setError] = useState('')
 
   const handleOpen = async () => {
-    // Check permission via an API route in a real app, 
-    // but here we can assume the server component filtered the button, 
-    // or we hit a simple endpoint to verify role.
+    setError('')
     setIsOpen(true)
   }
 

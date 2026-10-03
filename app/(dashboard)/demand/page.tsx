@@ -4,7 +4,7 @@ import { forecastDemand } from '@/lib/engines/demand'
 import { recordEvidence } from '@/lib/engines/evidence'
 import { KpiCard } from '@/components/shared/KpiCard'
 import { WhyDrawer } from '@/components/shared/WhyDrawer'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { DemandBarChart } from '@/components/charts/DemandBarChart'
 import { EmptyState } from '@/components/shared/EmptyState'
 
 export default async function DemandPage({ searchParams }: { searchParams: Promise<{ eventId?: string }> }) {
@@ -53,7 +53,7 @@ export default async function DemandPage({ searchParams }: { searchParams: Promi
     'v0.4'
   )
 
-  const evidence = await prisma.evidence.create({
+  await prisma.evidence.create({
     data: {
       entityType: evidenceRecord.entityType,
       entityId: evidenceRecord.entityId,
@@ -95,17 +95,7 @@ export default async function DemandPage({ searchParams }: { searchParams: Promi
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-card border border-border p-6 rounded-lg space-y-4">
           <h3 className="text-lg font-semibold">Occupation Breakdown</h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} contentStyle={{ borderRadius: '8px', border: '1px solid #E2E8F0' }} />
-                <Bar dataKey="count" fill="#0B2A4A" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <DemandBarChart data={chartData} />
         </div>
 
         <div className="bg-card border border-border p-6 rounded-lg space-y-4">

@@ -50,7 +50,6 @@ export default async function AuditPage() {
           <h3 className="font-semibold text-lg">Human Decisions (Audit Trail)</h3>
           <p className="text-sm text-muted-foreground">Every state mutation, approval, and rejection is logged.</p>
         </div>
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <DataTable columns={auditCols} data={auditLogs as any[]} />
       </div>
 
@@ -59,7 +58,6 @@ export default async function AuditPage() {
           <h3 className="font-semibold text-lg">AI Evidence (Provenance)</h3>
           <p className="text-sm text-muted-foreground">Traceability for all AI-derived values (assumptions, model versions, confidence).</p>
         </div>
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <DataTable columns={evidenceCols} data={evidenceLogs as any[]} />
       </div>
     </div>

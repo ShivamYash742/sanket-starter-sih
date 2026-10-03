@@ -3,7 +3,7 @@ import { requireRole } from '@/lib/rbac'
 import { prisma } from '@/lib/db'
 import { forecastDemand } from '@/lib/engines/demand'
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const roleInfo = requireRole()
 

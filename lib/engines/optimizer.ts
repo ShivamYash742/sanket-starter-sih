@@ -43,7 +43,6 @@ function getDist(lat1: number, lng1: number, lat2: number, lng2: number) {
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function optimizeActivation(
   highsInstance: unknown,
   cohorts: OptimizerCohort[],

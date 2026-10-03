@@ -27,7 +27,6 @@ export function WhyDrawer({ entityType, entityId, triggerLabel = 'Why?' }: WhyDr
   React.useEffect(() => {
     let mounted = true
     const loadData = async () => {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(true)
       try {
         const r = await fetch(`/api/evidence/${entityType}/${entityId}`)
@@ -36,7 +35,7 @@ export function WhyDrawer({ entityType, entityId, triggerLabel = 'Why?' }: WhyDr
           if (d.error) setEvidence({ error: d.error })
           else setEvidence(d)
         }
-      } catch (err) {
+      } catch {
         if (mounted) setEvidence({ error: 'Failed to load' })
       } finally {
         if (mounted) setLoading(false)
