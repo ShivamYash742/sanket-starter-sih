@@ -8,11 +8,456 @@ datasource db {
 }
 
 model User {
-  id          String   @id
-  clerkUserId String   @unique
+  id          String   @id @default(cuid())
+  clerkUserId String?  @unique
   email       String   @unique
-  role        String   @default("user")
+  role        String   @default("PLANNER")
   createdAt   DateTime @default(now())
 }
 
+model Consent {
+  id        String   @id @default(cuid())
+  workerId  String
+  worker    Worker   @relation(fields: [workerId], references: [id])
+  purpose   String
+  granted   Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
+model Occupation {
+  id               String             @id @default(cuid())
+  code             String             @unique
+  name             String
+  aliases          String[]
+  skills           OccupationSkill[]
+  workers          Worker[]
+  fromPaths        TransformationPath[] @relation("FromOccupation")
+  toPaths          TransformationPath[] @relation("ToOccupation")
+  forecastComponents ForecastComponent[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model Skill {
+  id             String               @id @default(cuid())
+  name           String               @unique
+  category       String
+  isEmerging     Boolean              @default(false)
+  occupations    OccupationSkill[]
+  workerSkills   WorkerSkill[]
+  relatedFrom    SkillRelationship[]  @relation("FromSkill")
+  relatedTo      SkillRelationship[]  @relation("ToSkill")
+  projectSkills  ProjectSkill[]
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+}
+
+model OccupationSkill {
+  id           String     @id @default(cuid())
+  occupationId String
+  occupation   Occupation @relation(fields: [occupationId], references: [id])
+  skillId      String
+  skill        Skill      @relation(fields: [skillId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([occupationId, skillId])
+}
+
+model SkillRelationship {
+  id          String   @id @default(cuid())
+  fromSkillId String
+  fromSkill   Skill    @relation("FromSkill", fields: [fromSkillId], references: [id])
+  toSkillId   String
+  toSkill     Skill    @relation("ToSkill", fields: [toSkillId], references: [id])
+  similarity  Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([fromSkillId, toSkillId])
+}
+
+enum DataSource {
+  PUBLIC
+  PARTNER
+  SYNTHETIC
+}
+
+model Worker {
+  id              String                @id @default(cuid())
+  workerRef       String                @unique
+  occupationId    String
+  occupation      Occupation            @relation(fields: [occupationId], references: [id])
+  state           String
+  district        String
+  lat             Float
+  lng             Float
+  experienceYears Float
+  availability    Float
+  dataSource      DataSource            @default(SYNTHETIC)
+  skills          WorkerSkill[]
+  certifications  WorkerCertification[]
+  trainings       WorkerTraining[]
+  consents        Consent[]
+  outcomes        Outcome[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+}
+
+enum SkillStatus {
+  VERIFIED
+  INFERRED
+}
+
+model WorkerSkill {
+  id          String      @id @default(cuid())
+  workerId    String
+  worker      Worker      @relation(fields: [workerId], references: [id])
+  skillId     String
+  skill       Skill       @relation(fields: [skillId], references: [id])
+  profLow     Float
+  profHigh    Float
+  status      SkillStatus
+  evidence    String?
+  confidence  Float
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([workerId, skillId])
+}
+
+model WorkerCertification {
+  id          String   @id @default(cuid())
+  workerId    String
+  worker      Worker   @relation(fields: [workerId], references: [id])
+  name        String
+  issuer      String
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WorkerTraining {
+  id          String   @id @default(cuid())
+  workerId    String
+  worker      Worker   @relation(fields: [workerId], references: [id])
+  courseName  String
+  completedAt DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Employer {
+  id        String   @id @default(cuid())
+  name      String
+  events    EconomicEvent[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EconomicEvent {
+  id              String   @id @default(cuid())
+  name            String
+  employerId      String?
+  employer        Employer? @relation(fields: [employerId], references: [id])
+  sector          String
+  state           String
+  district        String
+  investmentCr    Float
+  projectType     String
+  technology      String
+  startDate       DateTime
+  operationalDate DateTime
+  expectedHiring  Int
+  status          String
+  forecasts       Forecast[]
+  activationPlans ActivationPlan[]
+  scenarios       Scenario[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ComparableProject {
+  id           String   @id @default(cuid())
+  sector       String
+  investmentCr Float
+  workers      Int
+  state        String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Forecast {
+  id             String              @id @default(cuid())
+  eventId        String
+  event          EconomicEvent       @relation(fields: [eventId], references: [id])
+  low            Int
+  base           Int
+  high           Int
+  confidence     Float
+  modelVersionId String
+  horizonMonths  Int
+  components     ForecastComponent[]
+  actuals        ForecastActual[]
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+}
+
+model ForecastComponent {
+  id           String     @id @default(cuid())
+  forecastId   String
+  forecast     Forecast   @relation(fields: [forecastId], references: [id])
+  occupationId String
+  occupation   Occupation @relation(fields: [occupationId], references: [id])
+  count        Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model ProjectSkill {
+  id        String   @id @default(cuid())
+  projectId String
+  skillId   String
+  skill     Skill    @relation(fields: [skillId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TrainingCentre {
+  id        String          @id @default(cuid())
+  name      String
+  state     String
+  district  String
+  lat       Float
+  lng       Float
+  courses   CentreCourse[]
+  trainers  CentreTrainer[]
+  equipment CentreEquipment[]
+  capacity  CentreCapacity[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model CentreCourse {
+  id            String         @id @default(cuid())
+  centreId      String
+  centre        TrainingCentre @relation(fields: [centreId], references: [id])
+  courseKey     String
+  seatsPerCycle Int
+  seatsUsed     Int
+  durationWeeks Int
+  costPerSeat   Float
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model CentreCapacity {
+  id        String         @id @default(cuid())
+  centreId  String
+  centre    TrainingCentre @relation(fields: [centreId], references: [id])
+  data      String         // JSON string for convertible
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model CentreTrainer {
+  id        String         @id @default(cuid())
+  centreId  String
+  centre    TrainingCentre @relation(fields: [centreId], references: [id])
+  name      String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model CentreEquipment {
+  id        String         @id @default(cuid())
+  centreId  String
+  centre    TrainingCentre @relation(fields: [centreId], references: [id])
+  name      String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model TransformationPath {
+  id               String     @id @default(cuid())
+  fromOccupationId String
+  fromOccupation   Occupation @relation("FromOccupation", fields: [fromOccupationId], references: [id])
+  toOccupationId   String
+  toOccupation     Occupation @relation("ToOccupation", fields: [toOccupationId], references: [id])
+  bridgeModules    String     // JSON
+  missingSkills    String     // JSON
+  durationWeeks    Int
+  costPerWorker    Float
+  employerDemand   Float
+  historicalSuccess Float
+  confidence       Float
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+enum PlanStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  MODIFIED
+  REJECTED
+}
+
+model ActivationPlan {
+  id          String                 @id @default(cuid())
+  eventId     String
+  event       EconomicEvent          @relation(fields: [eventId], references: [id])
+  status      PlanStatus             @default(DRAFT)
+  totals      String                 // JSON
+  scenarioId  String?
+  assignments ActivationAssignment[]
+  outcomes    Outcome[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+}
+
+model ActivationAssignment {
+  id        String         @id @default(cuid())
+  planId    String
+  plan      ActivationPlan @relation(fields: [planId], references: [id])
+  cohortKey String
+  district  String
+  pathwayId String
+  centreId  String
+  cycle     Int
+  workers   Int
+  startWeek Int
+  cost      Float
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Scenario {
+  id          String          @id @default(cuid())
+  baseEventId String
+  baseEvent   EconomicEvent   @relation(fields: [baseEventId], references: [id])
+  params      String          // JSON
+  results     ScenarioResult[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model ScenarioResult {
+  id         String   @id @default(cuid())
+  scenarioId String
+  scenario   Scenario @relation(fields: [scenarioId], references: [id])
+  metrics    String   // JSON
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Evidence {
+  id             String   @id @default(cuid())
+  entityType     String
+  entityId       String
+  sources        String   // JSON
+  assumptions    String   // JSON
+  confidence     Float
+  modelVersionId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Assumption {
+  id        String   @id @default(cuid())
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ModelVersion {
+  id        String   @id @default(cuid())
+  name      String
+  version   String
+  params    String   // JSON
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum OutcomeStage {
+  ENROLLED
+  COMPLETED
+  CERTIFIED
+  APPLIED
+  PLACED
+}
+
+model Outcome {
+  id        String         @id @default(cuid())
+  workerId  String
+  worker    Worker         @relation(fields: [workerId], references: [id])
+  planId    String
+  plan      ActivationPlan @relation(fields: [planId], references: [id])
+  stage     OutcomeStage
+  wageBand  String?
+  retained  Boolean?
+  at        DateTime
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model ForecastActual {
+  id         String   @id @default(cuid())
+  forecastId String
+  forecast   Forecast @relation(fields: [forecastId], references: [id])
+  actual     Int
+  errorPct   Float
+  drivers    String   // JSON
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  actorId        String
+  action         String
+  entityType     String
+  entityId       String
+  before         String?  // JSON
+  after          String?  // JSON
+  reason         String?
+  modelVersionId String?
+  at             DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+enum Scope {
+  NATIONAL
+  STATE
+}
+
+model NationalAggregate {
+  id         String     @id @default(cuid())
+  scope      Scope
+  key        String
+  metrics    String     // JSON
+  dataSource DataSource @default(SYNTHETIC)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Alert {
+  id           String   @id @default(cuid())
+  severity     String
+  title        String
+  state        String
+  district     String
+  linkedEntity String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
