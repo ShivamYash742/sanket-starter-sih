@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sanket
+      POSTGRES_PASSWORD: sanket
+      POSTGRES_DB: sanket
+    ports:
+      - "5432:5432"
+    volumes:
+      - sanket_pg:/var/lib/postgresql/data
+  db_scratch:
+    image: postgres:16
+    profiles: ["scratch"]
+    environment:
+      POSTGRES_USER: sanket
+      POSTGRES_PASSWORD: sanket
+      POSTGRES_DB: sanket_scratch
+    ports:
+      - "5433:5432"
+volumes:
+  sanket_pg:
