@@ -10,11 +10,17 @@ import { EmptyState } from '@/components/shared/EmptyState'
 export default async function DemandPage({ searchParams }: { searchParams: Promise<{ eventId?: string }> }) {
   const { eventId } = await searchParams
 
-  if (!eventId) {
-    return <EmptyState title="No Event Selected" description="Please select or create an economic event first." />
+  const allEvents = await prisma.economicEvent.findMany({
+    orderBy: { createdAt: 'asc' }
+  })
+
+  const selectedEventId = eventId || allEvents[0]?.id
+
+  if (!selectedEventId) {
+    return <EmptyState title="No Events Registered" description="Please register an economic event first." />
   }
 
-  const event = await prisma.economicEvent.findUnique({ where: { id: eventId } })
+  const event = await prisma.economicEvent.findUnique({ where: { id: selectedEventId } })
   if (!event) return <EmptyState title="Event Not Found" description="The selected event does not exist." />
 
   const comparableProjects = await prisma.comparableProject.findMany({
@@ -73,10 +79,25 @@ export default async function DemandPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="space-y-8 animate-in fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Event Analysis: {event.name}</h2>
-          <p className="text-muted-foreground mt-1">{event.sector} • ₹{event.investmentCr.toLocaleString('en-IN')} Cr</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-2xl font-bold">Event Analysis: {event.name}</h2>
+            {allEvents.length > 1 && (
+              <div className="flex items-center gap-1 bg-muted p-1 rounded-md text-xs">
+                {allEvents.map(e => (
+                  <a
+                    key={e.id}
+                    href={`/demand?eventId=${e.id}`}
+                    className={`px-2 py-1 rounded transition-colors ${e.id === selectedEventId ? 'bg-card font-semibold text-navy shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    {e.name}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+          <p className="text-muted-foreground mt-1">{event.sector} • {event.district}, {event.state} • ₹{event.investmentCr.toLocaleString('en-IN')} Cr</p>
         </div>
         <WhyDrawer 
           entityType="Forecast" 

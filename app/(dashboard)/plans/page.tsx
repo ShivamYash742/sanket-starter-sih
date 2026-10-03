@@ -8,7 +8,19 @@ import { Loader2, Zap } from 'lucide-react'
 
 export default function PlansPage() {
   const [loading, setLoading] = useState(false)
-  const [plan, setPlan] = useState<any>(null)
+  const [plan, setPlan] = useState<any>({
+    demand: 2400,
+    direct: 620,
+    totalCost: 14520000,
+    assignments: [
+      { cohortId: 'Ahmedabad-AutoTech-6w', centreId: 'Training Centre 0 (Ahmedabad)', cycle: 0, workers: 300, cost: 3600000 },
+      { cohortId: 'Ahmedabad-AutoTech-6w', centreId: 'Training Centre 1 (Ahmedabad)', cycle: 0, workers: 240, cost: 2880000 },
+      { cohortId: 'Gandhinagar-Mech-12w', centreId: 'Training Centre 2 (Gandhinagar)', cycle: 0, workers: 200, cost: 4000000 },
+      { cohortId: 'Mehsana-AutoTech-6w', centreId: 'Training Centre 3 (Mehsana)', cycle: 1, workers: 170, cost: 2040000 },
+      { cohortId: 'Gandhinagar-Mech-12w', centreId: 'Training Centre 4 (Gandhinagar)', cycle: 1, workers: 100, cost: 2000000 }
+    ],
+    unactivated: { 'Residual Gap': 770 }
+  })
 
   const generatePlan = async () => {
     setLoading(true)
@@ -65,16 +77,16 @@ export default function PlansPage() {
       ) : (
         <div className="space-y-8 animate-in slide-in-from-bottom-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <KpiCard title="Demand" value="2,500" />
-            <KpiCard title="Directly Deployable" value="600" />
+            <KpiCard title="Demand" value={(plan.demand || 2400).toLocaleString('en-IN')} />
+            <KpiCard title="Directly Deployable" value={(plan.direct || 620).toLocaleString('en-IN')} />
             <KpiCard title="Activated Transformable" value={((plan.assignments as any[]) || []).reduce((a: number, c: { workers: number }) => a + c.workers, 0).toLocaleString('en-IN')} />
             <KpiCard title="Residual Gap" value={Object.values((plan.unactivated as Record<string, number>) || {}).reduce((a: number, c: number) => a + c, 0).toLocaleString('en-IN')} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <KpiCard title="Total Training Cost" value={`₹${plan.totalCost.toLocaleString('en-IN')}`} />
-            <KpiCard title="Activation Time" value="18 Weeks" />
-            <KpiCard title="Capacity Utilization" value="82%" />
+            <KpiCard title="Total Training Cost" value={`₹${(plan.totalCost || 14250000).toLocaleString('en-IN')}`} />
+            <KpiCard title="Activation Time" value="14 Weeks" />
+            <KpiCard title="Capacity Utilization" value="81%" />
           </div>
 
           <div className="bg-card border border-border rounded-lg overflow-hidden">

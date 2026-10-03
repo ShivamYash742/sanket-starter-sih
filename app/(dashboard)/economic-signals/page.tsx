@@ -75,7 +75,16 @@ export default function EconomicSignalsPage() {
 
       <div className="bg-card border border-border p-6 rounded-lg space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Smart Paste (Optional)</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium">Smart Paste (Optional)</label>
+            <button
+              type="button"
+              onClick={() => setPasteText("Tata Electronics announced a new greenfield Semiconductor Facility in Sanand, Gujarat with an investment of ₹10,000 Crore. The advanced node fabrication plant will become operational in 18 months, creating expected direct hiring of 2,400 specialized workforce roles.")}
+              className="text-xs text-saffron hover:underline font-medium"
+            >
+              Load Sample Press Release
+            </button>
+          </div>
           <div className="flex gap-2">
             <textarea 
               className="flex-1 min-h-[80px] rounded-md border border-border bg-transparent px-3 py-2 text-sm"

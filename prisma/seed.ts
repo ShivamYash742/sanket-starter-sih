@@ -208,10 +208,13 @@ async function main() {
   }
   await prisma.trainingCentre.createMany({ data: tcBatch })
 
-  // 7. Demo Event
-  const employer = await prisma.employer.create({ data: { name: 'Demo Employer' } })
+  // 7. Demo Events
+  const employer = await prisma.employer.create({ data: { name: 'Tata Electronics & Semiconductor' } })
+  const employer2 = await prisma.employer.create({ data: { name: 'Bharat EV Solutions' } })
+
   const event = await prisma.economicEvent.create({
     data: {
+      id: 'demo-event-id',
       name: 'Semiconductor Facility',
       employerId: employer.id,
       sector: 'SEMICONDUCTOR',
@@ -219,10 +222,28 @@ async function main() {
       district: 'Sanand',
       investmentCr: 10000,
       projectType: 'Greenfield',
-      technology: 'Advanced Node',
+      technology: 'Advanced Node Fabrication',
       startDate: new Date(),
       operationalDate: new Date(Date.now() + 18 * 30 * 24 * 60 * 60 * 1000), // 18 months
-      expectedHiring: 2500,
+      expectedHiring: 2400,
+      status: 'ANNOUNCED'
+    }
+  })
+
+  await prisma.economicEvent.create({
+    data: {
+      id: 'demo-event-ev',
+      name: 'EV Battery Gigafactory',
+      employerId: employer2.id,
+      sector: 'EV',
+      state: 'Maharashtra',
+      district: 'Pune',
+      investmentCr: 4500,
+      projectType: 'Greenfield',
+      technology: 'Lithium Iron Phosphate (LFP) Cells',
+      startDate: new Date(),
+      operationalDate: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000), // 12 months
+      expectedHiring: 1200,
       status: 'ANNOUNCED'
     }
   })
@@ -246,16 +267,165 @@ async function main() {
     }
   })
 
-  await prisma.alert.create({
+  // State-level aggregates for 8 states summing to national totals
+  const stateAggregates = [
+    { state: 'Gujarat', gap: 140000, demand: 520000, deployable: 260000, transformable: 120000, confidence: 76 },
+    { state: 'Maharashtra', gap: 120000, demand: 480000, deployable: 250000, transformable: 110000, confidence: 79 },
+    { state: 'Tamil Nadu', gap: 70000, demand: 360000, deployable: 200000, transformable: 90000, confidence: 82 },
+    { state: 'Karnataka', gap: 50000, demand: 320000, deployable: 190000, transformable: 80000, confidence: 80 },
+    { state: 'Telangana', gap: 35000, demand: 240000, deployable: 140000, transformable: 65000, confidence: 77 },
+    { state: 'Andhra Pradesh', gap: 25000, demand: 180000, deployable: 100000, transformable: 55000, confidence: 75 },
+    { state: 'Uttar Pradesh', gap: 25000, demand: 180000, deployable: 90000, transformable: 65000, confidence: 73 },
+    { state: 'Rajasthan', gap: 15000, demand: 120000, deployable: 70000, transformable: 35000, confidence: 74 }
+  ]
+
+  for (const s of stateAggregates) {
+    await prisma.nationalAggregate.create({
+      data: {
+        scope: Scope.STATE,
+        key: s.state,
+        dataSource: DataSource.SYNTHETIC,
+        metrics: JSON.stringify({
+          residual: s.gap,
+          workforceRequired: s.demand,
+          deployable: s.deployable,
+          transformable: s.transformable,
+          trainingCapacity: Math.round(s.demand * 0.3),
+          forecastConfidence: s.confidence
+        })
+      }
+    })
+  }
+
+  // 4 official alerts from AGENTS.md section 8
+  await prisma.alert.createMany({
+    data: [
+      {
+        severity: 'HIGH',
+        title: 'Semiconductor workforce gap in Gujarat',
+        state: 'Gujarat',
+        district: 'Sanand',
+        linkedEntity: 'demo-event-id'
+      },
+      {
+        severity: 'MEDIUM',
+        title: 'EV technician shortage projected in Maharashtra',
+        state: 'Maharashtra',
+        district: 'Pune',
+        linkedEntity: 'demo-event-ev'
+      },
+      {
+        severity: 'LOW',
+        title: 'Training capacity underused in Mehsana district',
+        state: 'Gujarat',
+        district: 'Mehsana'
+      },
+      {
+        severity: 'MEDIUM',
+        title: 'Project delay may create an 18% surplus',
+        state: 'Gujarat',
+        district: 'Sanand',
+        linkedEntity: 'demo-event-id'
+      }
+    ]
+  })
+
+  // 9. Baseline Activation Plan for Demo Event
+  const basePlan = await prisma.activationPlan.create({
     data: {
-      severity: 'HIGH',
-      title: 'Semiconductor workforce gap in Gujarat',
-      state: 'Gujarat',
-      district: 'Sanand'
+      id: 'demo-base-plan',
+      eventId: event.id,
+      status: 'PENDING',
+      totals: JSON.stringify({
+        demand: 2400,
+        direct: 620,
+        activated: 1010,
+        residual: 770,
+        cost: 14250000,
+        utilization: '81%'
+      })
     }
   })
 
-  // 9. Historical Outcome
+  const initialAssignments = [
+    { cohortKey: 'Ahmedabad-AutoTech-6w', district: 'Ahmedabad', pathwayId: 'path-1', centreId: 'Training Centre 0', cycle: 0, workers: 300, startWeek: 0, cost: 3600000 },
+    { cohortKey: 'Ahmedabad-AutoTech-6w', district: 'Ahmedabad', pathwayId: 'path-1', centreId: 'Training Centre 1', cycle: 0, workers: 240, startWeek: 0, cost: 2880000 },
+    { cohortKey: 'Gandhinagar-Mech-12w', district: 'Gandhinagar', pathwayId: 'path-2', centreId: 'Training Centre 2', cycle: 0, workers: 200, startWeek: 0, cost: 4000000 },
+    { cohortKey: 'Mehsana-AutoTech-6w', district: 'Mehsana', pathwayId: 'path-1', centreId: 'Training Centre 3', cycle: 1, workers: 170, startWeek: 8, cost: 2040000 },
+    { cohortKey: 'Gandhinagar-Mech-12w', district: 'Gandhinagar', pathwayId: 'path-2', centreId: 'Training Centre 4', cycle: 1, workers: 100, startWeek: 8, cost: 2000000 }
+  ]
+
+  for (const a of initialAssignments) {
+    await prisma.activationAssignment.create({
+      data: {
+        planId: basePlan.id,
+        cohortKey: a.cohortKey,
+        district: a.district,
+        pathwayId: a.pathwayId,
+        centreId: a.centreId,
+        cycle: a.cycle,
+        workers: a.workers,
+        startWeek: a.startWeek,
+        cost: a.cost
+      }
+    })
+  }
+
+  // 10. Evidence & Audit Logs
+  await prisma.evidence.createMany({
+    data: [
+      {
+        entityType: 'Forecast',
+        entityId: event.id,
+        sources: JSON.stringify({ comparableProjectsCount: 11, dataRegistry: 'DPIIT & SemiCon India' }),
+        assumptions: JSON.stringify({ regionalFactor: 1.0, hiringHorizonMonths: 18, techNode: '28nm' }),
+        confidence: 0.72,
+        modelVersionId: 'v0.4'
+      },
+      {
+        entityType: 'ActivationPlan',
+        entityId: basePlan.id,
+        sources: JSON.stringify({ candidatePool: 1630, certifiedCentres: 5 }),
+        assumptions: JSON.stringify({ maxRadiusKm: 60, cycleWeeks: 8, solver: 'HiGHS MILP' }),
+        confidence: 0.85,
+        modelVersionId: 'v0.4'
+      }
+    ]
+  })
+
+  await prisma.auditLog.createMany({
+    data: [
+      {
+        actorId: 'PLANNER',
+        action: 'CREATE',
+        entityType: 'EconomicEvent',
+        entityId: event.id,
+        before: '{}',
+        after: JSON.stringify({ name: event.name, sector: event.sector, investmentCr: event.investmentCr }),
+        reason: 'Initial registration of Gujarat Semiconductor Fab signal'
+      },
+      {
+        actorId: 'SYSTEM',
+        action: 'COMPILE_DEMAND',
+        entityType: 'Forecast',
+        entityId: event.id,
+        before: '{}',
+        after: JSON.stringify({ low: 2100, base: 2400, high: 2700, confidence: 0.72 }),
+        reason: 'Demand engine compiled forecast against 11 comparable projects'
+      },
+      {
+        actorId: 'SYSTEM',
+        action: 'OPTIMIZE',
+        entityType: 'ActivationPlan',
+        entityId: basePlan.id,
+        before: '{}',
+        after: JSON.stringify({ activated: 1010, residual: 770, cost: 14250000 }),
+        reason: 'HiGHS MILP optimizer generated cohort assignments'
+      }
+    ]
+  })
+
+  // 11. Historical Outcome
   // For golden test: forecast 500, actual 430
   const f = await prisma.forecast.create({
     data: {
@@ -273,7 +443,7 @@ async function main() {
       forecastId: f.id,
       actual: 430,
       errorPct: -0.14,
-      drivers: JSON.stringify(['training bottleneck'])
+      drivers: JSON.stringify(['training bottleneck', 'demand overestimation'])
     }
   })
 
