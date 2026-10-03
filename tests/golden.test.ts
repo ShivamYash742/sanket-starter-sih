@@ -3,6 +3,8 @@ import { forecastDemand } from '../lib/engines/demand'
 import { classifyWorker } from '../lib/engines/capability'
 import { computeGap } from '../lib/engines/gap'
 import { computeOutcomeError } from '../lib/engines/outcome'
+import { optimizeActivation } from '../lib/engines/optimizer'
+import highs from 'highs'
 import { ARCHETYPES } from '../prisma/archetypes'
 
 describe('Golden Tests', () => {
@@ -123,5 +125,35 @@ describe('Golden Tests', () => {
   it('Historical outcome: forecast 500, actual 430 gives -14%', () => {
     const err = computeOutcomeError(500, 430)
     expect(err).toBeCloseTo(-0.14)
+  })
+
+  describe('3b. Optimizer and Activation Plan', () => {
+    it('Optimizer activates 1,010 workers and leaves 770 residual', async () => {
+      // Create lightweight mock for testing the solver engine directly
+      const highsInstance = await highs()
+      
+      const cohorts = [
+        { id: 'coh-1', workers: 540, courseKey: 'Auto Tech', district: 'Ahmedabad', lat: 23.02, lng: 72.57, durationWeeks: 6 },
+        { id: 'coh-2', workers: 470, courseKey: 'Auto Tech', district: 'Gandhinagar', lat: 23.21, lng: 72.68, durationWeeks: 10 }
+      ]
+
+      const centres = [
+        { id: 'cen-1', courseKey: 'Auto Tech', seatsPerCycle: 300, costPerSeat: 15000, cycles: 3, lat: 23.00, lng: 72.50 }, // 900 seats
+        { id: 'cen-2', courseKey: 'Auto Tech', seatsPerCycle: 200, costPerSeat: 18000, cycles: 2, lat: 23.25, lng: 72.70 } // 400 seats
+      ] // Total 1300 seats, enough for 1010 workers.
+
+      const result = await optimizeActivation(highsInstance, cohorts, centres, 60)
+      
+      let activated = 0
+      result.assignments.forEach((a: { workers: number }) => activated += a.workers)
+      
+      expect(activated).toBe(1010)
+      
+      const demand = 2400
+      const direct = 620
+      const residual = Math.max(0, demand - direct - activated)
+      
+      expect(residual).toBe(770)
+    })
   })
 })
