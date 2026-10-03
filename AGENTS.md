@@ -2,7 +2,7 @@
 
 Web application only. No mobile app. One Next.js codebase containing UI, backend, database layer, seed data and engines.
 
-## 1. Product
+## 1. Product x 
 
 SANKET converts an economic signal (a new factory, an investment, a technology shift) into an evidence-backed workforce plan, then tracks real outcomes and recalibrates.
 
