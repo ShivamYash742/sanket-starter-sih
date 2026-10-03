@@ -31,7 +31,7 @@ export function forecastDemand(params: DemandParams): ForecastResult {
     regionalFactor = 1.0,
     demandFactor = 1.0,
     occupationFractions,
-    confidenceCalibrator = 0.72
+    confidenceCalibrator = 0.7
   } = params
 
   if (comparableProjects.length === 0) {

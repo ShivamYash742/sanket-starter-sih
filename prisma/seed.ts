@@ -237,6 +237,7 @@ async function main() {
     data: {
       scope: Scope.NATIONAL,
       key: 'OVERVIEW',
+      dataSource: DataSource.SYNTHETIC,
       metrics: JSON.stringify({
         emergingDemand: 18,
         workforceRequired: 2400000,
