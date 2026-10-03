@@ -43,7 +43,7 @@ export function Sidebar({ role }: { role: Role }) {
       <div className="flex h-14 items-center px-4 font-semibold text-lg border-b border-sidebar-border/20 text-white">
         SANKET
       </div>
-      <nav className="flex-1 overflow-y-auto py-4">
+      <nav aria-label="Sidebar Navigation" className="flex-1 overflow-y-auto py-4">
         <ul className="space-y-1 px-2 text-white">
           {allowedItems.map((item) => {
             const isActive = pathname === item.href
@@ -57,8 +57,9 @@ export function Sidebar({ role }: { role: Role }) {
                       ? 'bg-sidebar-primary text-sidebar-primary-foreground' 
                       : 'hover:bg-sidebar-primary/50 text-white/80'
                   )}
+                  aria-current={isActive ? 'page' : undefined}
                 >
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className="h-4 w-4" aria-hidden="true" />
                   {item.name}
                 </Link>
               </li>
