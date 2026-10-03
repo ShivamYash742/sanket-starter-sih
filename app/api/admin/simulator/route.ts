@@ -25,6 +25,19 @@ export async function POST() {
     await prisma.outcome.createMany(...)
     */
 
+    await prisma.auditLog.create({
+      data: {
+        actorId: roleInfo.role,
+        action: 'UPDATE',
+        entityType: 'Worker',
+        entityId: 'batch-1630',
+        before: '{}',
+        after: '{"funnel":"seeded"}',
+        reason: 'Admin ran outcome simulator blueprint',
+        at: new Date()
+      }
+    })
+
     return NextResponse.json({ success: true, message: 'Funnel seeded' })
   } catch (err) {
     console.error(err)

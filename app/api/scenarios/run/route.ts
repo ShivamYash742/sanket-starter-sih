@@ -3,6 +3,17 @@ import { requireRole } from '@/lib/rbac'
 import { prisma } from '@/lib/db'
 import { computeScenario } from '@/lib/engines/scenario'
 
+import { z } from 'zod'
+
+const scenarioSchema = z.object({
+  demandPct: z.number(),
+  investmentScale: z.number(),
+  hiringVelocityFactor: z.number(),
+  delayWeeks: z.number(),
+  migrationPct: z.number(),
+  trainingCapacityPct: z.number()
+})
+
 export async function POST(req: Request) {
   const roleInfo = requireRole()
   if (roleInfo.role === 'EMPLOYER') {
@@ -10,7 +21,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json()
+    const rawBody = await req.json()
+    const body = scenarioSchema.parse(rawBody)
     
     // Hardcode base metrics to guarantee golden test base consistency
     const baseDemand = 24 * 100
@@ -50,6 +62,20 @@ export async function POST(req: Request) {
         assumptions: JSON.stringify(body),
         confidence: 0.9,
         modelVersionId: 'ScenarioEngine_v1'
+      }
+    })
+
+    await prisma.auditLog.create({
+      data: {
+        actorId: roleInfo.role,
+        action: 'CREATE',
+        entityType: 'Scenario',
+        entityId: scenario.id,
+        before: '{}',
+        after: JSON.stringify(body),
+        reason: 'Ran stress-test scenario',
+        modelVersionId: 'ScenarioEngine_v1',
+        at: new Date()
       }
     })
 

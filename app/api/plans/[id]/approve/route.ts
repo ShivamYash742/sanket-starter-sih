@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server'
 import { requireRole } from '@/lib/rbac'
 import { prisma } from '@/lib/db'
 
+import { z } from 'zod'
+
+const approveSchema = z.object({
+  action: z.enum(['APPROVE', 'MODIFY', 'REJECT']),
+  reason: z.string().optional()
+})
+
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   // Await params per Next.js 16 conventions
   const { id } = await params
@@ -12,8 +19,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
 
   try {
-    const body = await req.json()
-    const { action, reason } = body // 'APPROVE', 'MODIFY', 'REJECT'
+    const rawBody = await req.json()
+    const { action, reason } = approveSchema.parse(rawBody)
 
     if ((action === 'MODIFY' || action === 'REJECT') && (!reason || reason.trim() === '')) {
       return NextResponse.json({ error: 'Reason is mandatory for MODIFY and REJECT' }, { status: 400 })
