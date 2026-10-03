@@ -8,7 +8,7 @@ import { Loader2, Zap } from 'lucide-react'
 
 export default function PlansPage() {
   const [loading, setLoading] = useState(false)
-  const [plan, setPlan] = useState<Record<string, unknown> | null>(null)
+  const [plan, setPlan] = useState<any>(null)
 
   const generatePlan = async () => {
     setLoading(true)
@@ -34,9 +34,9 @@ export default function PlansPage() {
   const assignmentCols = [
     { key: 'cohortId', title: 'Cohort ID' },
     { key: 'centreId', title: 'Assigned Centre' },
-    { key: 'cycle', title: 'Cycle', render: (r: { cycle: number }) => `Cycle ${r.cycle + 1}` },
+    { key: 'cycle', title: 'Cycle', render: (r: any) => `Cycle ${r.cycle + 1}` },
     { key: 'workers', title: 'Workers Activated' },
-    { key: 'cost', title: 'Estimated Cost (₹)', render: (r: { cost: number }) => r.cost.toLocaleString('en-IN') }
+    { key: 'cost', title: 'Estimated Cost (₹)', render: (r: any) => r.cost.toLocaleString('en-IN') }
   ]
 
   return (

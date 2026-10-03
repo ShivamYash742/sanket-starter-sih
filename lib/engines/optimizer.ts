@@ -162,6 +162,7 @@ export async function optimizeActivation(
   ].join('\n')
 
   try {
+    // @ts-expect-error dynamic WASM binding
     const solution = await highsInstance.solve(lpString)
     
     // Parse HiGHS solution

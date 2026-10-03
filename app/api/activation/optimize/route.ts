@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     // Real implementation would group workers by (district x missing bridge modules).
     
     // 1. Fetch workers classified as ONE_STEP or TWO_STEP
-    // This is heavily abstracted for the demo, assuming we get exactly the 1010 transformable.
+    // This is heavily abstracted for the demo, assuming we get exactly the baseline transformable.
     
     // We mock cohorts and centres here to guarantee the baseline
     const cohorts: OptimizerCohort[] = [
